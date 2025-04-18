@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,22 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Gaming theme colors
+				gaming: {
+					primary: '#8B5CF6', // Purple
+					secondary: '#6366F1', // Indigo
+					accent: '#EC4899', // Pink
+					background: '#1A1F2C', // Dark blue-gray
+					foreground: '#F8FAFC', // Light gray/white
+					card: '#262B38', // Slightly lighter than background
+					muted: '#384153', // Muted gray
+					sale: '#10B981', // Green for sales
+					free: '#F59E0B', // Amber for free games
+					steam: '#2A475E', // Steam brand color
+					epic: '#2A2A2A', // Epic Games brand color
+					gog: '#86198F', // GOG brand color
+					amazon: '#FF9900', // Amazon brand color
 				}
 			},
 			borderRadius: {
@@ -84,11 +101,21 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-subtle': {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.8' }
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-5px)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite',
+				'float': 'float 3s ease-in-out infinite'
 			}
 		}
 	},
