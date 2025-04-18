@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,6 +8,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  signInWithSteam: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,11 +18,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const signInWithSteam = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'steam',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+        },
+      });
+      
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error signing in with Steam:', error);
+      toast({
+        title: 'Error signing in with Steam',
+        description: 'Please try again later',
+        variant: 'destructive',
+      });
+    }
+  };
+
   useEffect(() => {
-    // Get the initial session state
     const initializeAuth = async () => {
       try {
-        // First, get the session
         const { data: { session: initialSession } } = await supabase.auth.getSession();
         setSession(initialSession);
         setUser(initialSession?.user ?? null);
@@ -35,7 +53,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initializeAuth();
 
-    // Set up auth state listener for future changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
         setSession(currentSession);
@@ -55,7 +72,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    // Clean up the subscription when the component unmounts
     return () => {
       subscription.unsubscribe();
     };
@@ -74,6 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     loading,
     signOut,
+    signInWithSteam,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

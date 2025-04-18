@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Game } from '@/components/GameCard';
 import { BacklogGame } from '@/components/BacklogItem';
@@ -27,15 +26,15 @@ export const getWishlistedGames = async (): Promise<Game[]> => {
 
   const backlogGameIds = new Set(backlogItems?.map(item => item.game_id) || []);
 
-  // Convert to the Game interface
+  // Convert to the Game interface with proper platform typing
   return wishlistItems.map(item => {
     const game = item.games;
     return {
       id: game.id,
       title: game.title,
       imageUrl: game.image_url || '',
-      platform: game.platform,
-      status: game.is_free ? 'free' : (game.is_on_sale ? 'sale' : null),
+      platform: game.platform as Platform,
+      status: game.is_free ? 'free' as const : (game.is_on_sale ? 'sale' as const : null),
       discount: game.discount_percentage ? `-${game.discount_percentage}%` : undefined,
       originalPrice: game.original_price ? `$${game.original_price}` : undefined,
       salePrice: game.sale_price ? `$${game.sale_price}` : undefined,
@@ -84,17 +83,17 @@ export const getNotifications = async (): Promise<Notification[]> => {
     return [];
   }
 
-  // Convert to the Notification interface
+  // Convert to the Notification interface with proper type typing
   return notificationItems.map(item => {
     const game = item.games;
     return {
       id: item.id,
-      type: item.type,
+      type: item.type as NotificationType,
       title: item.title,
       message: item.message,
       timestamp: new Date(item.created_at),
       read: item.is_read,
-      platformIcon: game.platform
+      platformIcon: game.platform as Platform
     };
   });
 };
@@ -126,9 +125,12 @@ export const removeFromWishlist = async (gameId: string): Promise<void> => {
 
 // Add game to backlog
 export const addToBacklog = async (gameId: string): Promise<void> => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('User not authenticated');
+
   const { error } = await supabase
     .from('backlogs')
-    .insert({ game_id: gameId });
+    .insert({ game_id: gameId, user_id: user.id });
 
   if (error) {
     console.error('Error adding to backlog:', error);
