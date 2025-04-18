@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Navbar from '@/components/Navbar';
 import PlatformSelector from '@/components/PlatformSelector';
 import WishlistCard from '@/components/WishlistCard';
 import BacklogItem, { BacklogGame } from '@/components/BacklogItem';
 import { Game } from '@/components/GameCard';
-import NotificationCenter, { Notification } from '@/components/NotificationCenter';
+import NotificationCenter from '@/components/NotificationCenter';
 import AddGameModal from '@/components/AddGameModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
@@ -19,124 +20,49 @@ import {
   Library, 
   ListPlus 
 } from 'lucide-react';
-
-// Mock data
-const mockWishlistGames: Game[] = [
-  {
-    id: '1',
-    title: 'Cyberpunk 2077',
-    imageUrl: 'https://cdn.akamai.steamstatic.com/steam/apps/1091500/capsule_616x353.jpg',
-    platform: 'steam',
-    status: 'sale',
-    discount: '-50%',
-    originalPrice: '$59.99',
-    salePrice: '$29.99',
-    inBacklog: false
-  },
-  {
-    id: '2',
-    title: 'God of War',
-    imageUrl: 'https://cdn.akamai.steamstatic.com/steam/apps/1593500/capsule_616x353.jpg',
-    platform: 'epic',
-    status: null,
-    inBacklog: true
-  },
-  {
-    id: '3',
-    title: 'Starfield',
-    imageUrl: 'https://cdn.akamai.steamstatic.com/steam/apps/1716740/capsule_616x353.jpg',
-    platform: 'steam',
-    status: null,
-    inBacklog: false
-  },
-  {
-    id: '4',
-    title: 'Baldur\'s Gate 3',
-    imageUrl: 'https://cdn.akamai.steamstatic.com/steam/apps/1086940/capsule_616x353.jpg',
-    platform: 'gog',
-    status: 'free',
-    inBacklog: true
-  },
-  {
-    id: '5',
-    title: 'The Witcher 3: Wild Hunt',
-    imageUrl: 'https://cdn.akamai.steamstatic.com/steam/apps/292030/capsule_616x353.jpg',
-    platform: 'amazon',
-    status: 'sale',
-    discount: '-70%',
-    originalPrice: '$39.99',
-    salePrice: '$11.99',
-    inBacklog: false
-  }
-];
-
-const mockBacklogGames: BacklogGame[] = [
-  {
-    id: '1',
-    title: 'God of War',
-    imageUrl: 'https://cdn.akamai.steamstatic.com/steam/apps/1593500/capsule_616x353.jpg',
-    platform: 'epic',
-    hoursPlayed: 12,
-    lastPlayed: new Date('2023-11-15'),
-    priority: 'high',
-    progress: 45
-  },
-  {
-    id: '2',
-    title: 'Baldur\'s Gate 3',
-    imageUrl: 'https://cdn.akamai.steamstatic.com/steam/apps/1086940/capsule_616x353.jpg',
-    platform: 'gog',
-    hoursPlayed: 50,
-    lastPlayed: new Date('2023-12-20'),
-    priority: 'medium',
-    progress: 75
-  },
-  {
-    id: '3',
-    title: 'Hades',
-    imageUrl: 'https://cdn.akamai.steamstatic.com/steam/apps/1145360/capsule_616x353.jpg',
-    platform: 'steam',
-    hoursPlayed: 3,
-    priority: 'low',
-    progress: 15
-  }
-];
-
-const mockNotifications: Notification[] = [
-  {
-    id: '1',
-    type: 'sale',
-    title: 'Cyberpunk 2077 is on sale!',
-    message: 'Your wishlisted game is 50% off until January 30, 2024.',
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-    read: false,
-    platformIcon: 'steam'
-  },
-  {
-    id: '2',
-    type: 'free',
-    title: 'Baldur\'s Gate 3 is free to claim!',
-    message: 'Claim this game for free on GOG until tomorrow.',
-    timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
-    read: false,
-    platformIcon: 'gog'
-  },
-  {
-    id: '3',
-    type: 'backlog',
-    title: 'Play God of War',
-    message: 'You haven\'t played this game in 2 weeks. Time to continue your adventure!',
-    timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-    read: true,
-    platformIcon: 'epic'
-  }
-];
+import { useAuth } from '@/providers/AuthProvider';
+import { toast } from '@/components/ui/use-toast';
+import { 
+  getWishlistedGames, 
+  getBacklogGames, 
+  getNotifications,
+  addToBacklog, 
+  removeFromBacklog,
+  markNotificationAsRead,
+  addGame
+} from '@/services/gameService';
 
 const Index = () => {
+  const { user } = useAuth();
   const [selectedPlatform, setSelectedPlatform] = useState('all');
-  const [wishlistGames, setWishlistGames] = useState<Game[]>(mockWishlistGames);
-  const [backlogGames, setBacklogGames] = useState<BacklogGame[]>(mockBacklogGames);
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+  const queryClient = useQueryClient();
+
+  // Fetch wishlist games
+  const { 
+    data: wishlistGames = [], 
+    isLoading: isLoadingWishlist 
+  } = useQuery({
+    queryKey: ['wishlistGames'],
+    queryFn: getWishlistedGames,
+  });
+
+  // Fetch backlog games
+  const { 
+    data: backlogGames = [], 
+    isLoading: isLoadingBacklog 
+  } = useQuery({
+    queryKey: ['backlogGames'],
+    queryFn: getBacklogGames,
+  });
+
+  // Fetch notifications
+  const { 
+    data: notifications = [], 
+    isLoading: isLoadingNotifications 
+  } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: getNotifications,
+  });
   
   // Filter games by platform if a specific one is selected
   const filteredWishlistGames = selectedPlatform === 'all' 
@@ -150,46 +76,104 @@ const Index = () => {
   const freeGames = wishlistGames.filter(game => game.status === 'free');
   
   // Handle adding game to backlog
-  const handleAddToBacklog = (gameId: string) => {
-    setWishlistGames(prevGames => 
-      prevGames.map(game => 
-        game.id === gameId 
-          ? { ...game, inBacklog: !game.inBacklog } 
-          : game
-      )
-    );
+  const handleAddToBacklog = async (gameId: string) => {
+    try {
+      const gameToUpdate = wishlistGames.find(game => game.id === gameId);
+      if (!gameToUpdate) return;
+
+      if (gameToUpdate.inBacklog) {
+        await removeFromBacklog(gameId);
+        toast({
+          title: "Removed from backlog",
+          description: `${gameToUpdate.title} has been removed from your backlog`,
+        });
+      } else {
+        await addToBacklog(gameId);
+        toast({
+          title: "Added to backlog",
+          description: `${gameToUpdate.title} has been added to your backlog`,
+        });
+      }
+      
+      // Refresh the data
+      queryClient.invalidateQueries({ queryKey: ['wishlistGames'] });
+      queryClient.invalidateQueries({ queryKey: ['backlogGames'] });
+    } catch (error) {
+      console.error('Error toggling backlog status:', error);
+      toast({
+        title: "Error",
+        description: "There was an error updating your backlog",
+        variant: "destructive",
+      });
+    }
   };
   
   // Handle marking notification as read
-  const handleMarkAsRead = (notificationId: string) => {
-    setNotifications(prevNotifications =>
-      prevNotifications.map(notification =>
-        notification.id === notificationId
-          ? { ...notification, read: true }
-          : notification
-      )
-    );
+  const handleMarkAsRead = async (notificationId: string) => {
+    try {
+      await markNotificationAsRead(notificationId);
+      // Refresh notifications
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      toast({
+        title: "Error",
+        description: "There was an error updating the notification",
+        variant: "destructive",
+      });
+    }
   };
   
   // Handle adding a new game
-  const handleAddGame = (gameData: any) => {
-    const newGame: Game = {
-      id: Date.now().toString(),
-      title: gameData.title,
-      imageUrl: gameData.imageUrl || '',
-      platform: gameData.platform,
-      status: gameData.status === 'none' ? null : gameData.status,
-      inBacklog: false
-    };
-    
-    if (gameData.status === 'sale') {
-      newGame.discount = '-20%'; // Default discount
-      newGame.originalPrice = gameData.price || '$59.99';
-      newGame.salePrice = gameData.price || '$47.99';
+  const handleAddGame = async (gameData: any) => {
+    try {
+      // First add the game to the database
+      const gameId = await addGame({
+        title: gameData.title,
+        platform: gameData.platform,
+        imageUrl: gameData.imageUrl || '',
+        originalPrice: gameData.price ? parseFloat(gameData.price) : undefined,
+        isOnSale: gameData.status === 'sale',
+        isFree: gameData.status === 'free',
+        discountPercentage: gameData.status === 'sale' ? 20 : undefined, // Default discount
+        salePrice: gameData.status === 'sale' && gameData.price ? parseFloat(gameData.price) * 0.8 : undefined, // 20% off
+      });
+
+      // Then add it to the user's wishlist
+      if (gameId) {
+        await addToBacklog(gameId);
+        
+        // Refresh data
+        queryClient.invalidateQueries({ queryKey: ['wishlistGames'] });
+        queryClient.invalidateQueries({ queryKey: ['backlogGames'] });
+        
+        toast({
+          title: "Game added",
+          description: `${gameData.title} has been added to your collection`,
+        });
+      }
+    } catch (error) {
+      console.error('Error adding game:', error);
+      toast({
+        title: "Error",
+        description: "There was an error adding the game",
+        variant: "destructive",
+      });
     }
-    
-    setWishlistGames(prevGames => [newGame, ...prevGames]);
   };
+
+  if (isLoadingWishlist || isLoadingBacklog || isLoadingNotifications) {
+    return (
+      <div className="min-h-screen bg-gaming-background text-gaming-foreground">
+        <Navbar />
+        <div className="flex items-center justify-center h-[80vh]">
+          <div className="text-center">
+            <p className="text-xl">Loading your dashboard...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gaming-background text-gaming-foreground">
@@ -206,7 +190,7 @@ const Index = () => {
                   Game Dashboard
                 </h1>
                 <p className="text-gaming-muted-foreground mt-1">
-                  Track your games, sales, and backlog across platforms
+                  Hello, {user?.email} - Track your games, sales, and backlog across platforms
                 </p>
               </div>
               

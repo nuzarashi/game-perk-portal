@@ -1,56 +1,34 @@
 
 import React from 'react';
-import { Bell, Gamepad2, Settings, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Gamepad2, LogOut } from 'lucide-react';
+import { useAuth } from '@/providers/AuthProvider';
 
 const Navbar = () => {
+  const { signOut } = useAuth();
+
   return (
-    <nav className="border-b border-gaming-muted/30 bg-gaming-background/90 backdrop-blur-sm sticky top-0 z-50">
+    <header className="sticky top-0 z-50 w-full border-b border-gaming-muted/30 bg-gaming-card/90 backdrop-blur-sm">
       <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <Gamepad2 className="h-6 w-6 text-gaming-primary" />
-          <span className="font-bold text-xl">GamePerk</span>
-        </div>
+          <span className="text-xl font-bold">GameTrack</span>
+        </Link>
         
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gaming-accent text-[10px] text-white">
-              3
-            </span>
+        <nav className="hidden md:flex items-center gap-6">
+          <Link to="/" className="text-sm text-gaming-foreground hover:text-gaming-primary">Dashboard</Link>
+          <a href="#" className="text-sm text-gaming-foreground hover:text-gaming-primary">Explore</a>
+          <a href="#" className="text-sm text-gaming-foreground hover:text-gaming-primary">Deals</a>
+        </nav>
+        
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={signOut}>
+            <LogOut className="h-5 w-5" />
           </Button>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <User className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <span>Log out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       </div>
-    </nav>
+    </header>
   );
 };
 
