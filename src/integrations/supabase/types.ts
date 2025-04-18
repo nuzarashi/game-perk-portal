@@ -9,7 +9,186 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      backlogs: {
+        Row: {
+          added_at: string
+          game_id: string
+          hours_played: number | null
+          id: string
+          last_played: string | null
+          priority: string | null
+          progress: number | null
+          user_id: string
+        }
+        Insert: {
+          added_at?: string
+          game_id: string
+          hours_played?: number | null
+          id?: string
+          last_played?: string | null
+          priority?: string | null
+          progress?: number | null
+          user_id: string
+        }
+        Update: {
+          added_at?: string
+          game_id?: string
+          hours_played?: number | null
+          id?: string
+          last_played?: string | null
+          priority?: string | null
+          progress?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "backlogs_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      games: {
+        Row: {
+          created_at: string
+          discount_percentage: number | null
+          id: string
+          image_url: string | null
+          is_free: boolean | null
+          is_on_sale: boolean | null
+          original_price: number | null
+          platform: string
+          sale_price: number | null
+          source_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discount_percentage?: number | null
+          id?: string
+          image_url?: string | null
+          is_free?: boolean | null
+          is_on_sale?: boolean | null
+          original_price?: number | null
+          platform: string
+          sale_price?: number | null
+          source_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discount_percentage?: number | null
+          id?: string
+          image_url?: string | null
+          is_free?: boolean | null
+          is_on_sale?: boolean | null
+          original_price?: number | null
+          platform?: string
+          sale_price?: number | null
+          source_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          game_id: string
+          id: string
+          is_read: boolean | null
+          message: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          game_id: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          game_id?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      wishlists: {
+        Row: {
+          added_at: string
+          game_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string
+          game_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string
+          game_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlists_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
